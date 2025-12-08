@@ -60,3 +60,44 @@ sudo dhclient wlo1
 # 7) 인터넷 연결 테스트
 ping -c 5 8.8.8.8   # 외부 IP 연결 확인
 ping -c 5 google.com # DNS 및 인터넷 연결 확인
+```
+
+----------------------------------------------------------------------------------
+
+
+## 인터넷 연결은 정상인데 DNS 서버만 망가진 상황인 경우.
+
+IP 정상
+Default route 정상
+인터넷(핑 IP)은 될 가능성 높음
+resolv.conf에 128.134.135.200 단 하나만 등록됨
+이 DNS가 응답 안 해서 name resolution 실패 중
+
+
+### 해결 방법
+#### Google / Cloudflare DNS로 강제 변경
+
+```
+sudo nmcli connection modify "HQ_6F" ipv4.dns "8.8.8.8 1.1.1.1"
+
+sudo nmcli connection modify "HQ_6F" ipv4.ignore-auto-dns yes
+
+sudo nmcli connection down "HQ_6F"
+
+sudo nmcli connection up "HQ_6F"
+```
+
+그 후 확인:
+
+cat /etc/resolv.conf
+
+
+아래처럼 나오면 성공:
+
+nameserver 8.8.8.8
+nameserver 1.1.1.1
+
+추가: systemd-resolved가 꼬였을 가능성도 있으니 서비스 재시작
+```
+sudo systemctl restart systemd-resolved
+```
